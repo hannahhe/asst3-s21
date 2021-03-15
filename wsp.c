@@ -8,8 +8,8 @@
 #include <limits.h>
 #include <pthread.h>
 
-// TODO: You may find this helpful.
-//#include <omp.h>
+// TODO: You may find this helpful. -> for openMP
+#include <omp.h>
 
 /*
 ________________________________________________
@@ -106,6 +106,16 @@ void wsp_print_result() {
 void wsp_start() {
 
   // TODO: try finding a better path.
+  /*
+    IMPLEMENT SEQUENTIAL VERSION RECURSIVELY
+    -> use some sort of DFS?
+    0. current bound = INF
+    1. Start evaluating a route of the tree
+    2. if distance < current bound, keep evaluating until entire route is evaluated
+    3. current bound = distance
+    3. else, prune
+    4. Repeat
+  */
   int cityID = 0;
   for(cityID=0; cityID < NCITIES; cityID++) {
     bestPath->path[cityID] = cityID;
