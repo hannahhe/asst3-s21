@@ -7,10 +7,12 @@
 #include <error.h>
 #include <limits.h>
 #include <pthread.h>
+#include <vector>
+#include <iostream>
 
 // TODO: You may find this helpful. -> for openMP
 #include <omp.h>
-
+using namespace std;
 /*
 ________________________________________________
 
@@ -68,7 +70,7 @@ int *DIST = NULL; // one dimensional array used as a matrix of size (NCITIES * N
 
 
 typedef struct path_struct_t {
-  int cost;         // path cost.
+  int cost = INT_MAX;         // path cost.
   city_t *path;     // order of city visits (you may start from any city).
 } path_t;
 path_t *bestPath = NULL;
@@ -102,6 +104,76 @@ void wsp_print_result() {
   return;
 }
 
+// typedef vector<int> vi;
+// typedef vector<vi> vvi;
+
+// int n, m; vvi G;
+// vector<bool> visited;
+// vi visits;
+
+// void dfs(int u) {
+//   visited[u] = true;
+//   visits.push_back(u);
+
+//   for (auto &v : G[u]) {
+//     if (!visited[v]) dfs(v);
+//   }
+// }
+
+// int main(void) {
+//   cin >> n >> m;
+//   G = vvi(n, vi(0));
+//   for (int i = 0; i < m; i++) {
+//     int u, v; cin >> u >> v; u--; v--;
+//     G[u].push_back(v); G[v].push_back(u);
+//   }
+
+//   int count = 0;
+//   visited = vector<bool>(n, false);
+//   for (int u = 0; u < n; u++) {
+//     visits = vi(0);
+//     if (!visited[u]) {
+//       dfs(u);
+//       bool isCycle = true;
+//       for (auto &u : visits) isCycle = isCycle && G[u].size() == 2;
+//       count += isCycle;
+//     }
+//   }
+//   cout << count;
+
+//   return 0;
+// }
+
+void dfs(int root, vector<bool> &v, vector<city_t> &path){
+  //mark root as visited
+  v[root] = true;
+  path.push_back(root);
+  cout << root << ", ";
+  for (int neighbor = 0; neighbor < NCITIES; neighbor++) {
+      if (!v[neighbor]) {
+        // int cost = get_dist(root, neighbor);
+        // could also calculate cost here ^
+        dfs(neighbor, v, path);
+      }
+    }
+  v[root] = false;
+  // finished path -> calculate cost here
+  int prevCity = path[0];
+  int pathCost = 0;
+  for(u_int32_t i = 1; i < path.size(); ++i){
+    pathCost += get_dist(prevCity, i);
+    prevCity = i;
+  }
+  if(pathCost < bestPath->cost){
+    bestPath->cost = pathCost;
+    for(u_int32_t i = 0; i < path.size(); ++i){
+      bestPath->path[i] = path[i];
+    }
+  }
+
+  path.pop_back(); //undo everything
+}
+
 
 void wsp_start() {
 
@@ -116,10 +188,29 @@ void wsp_start() {
     3. else, prune
     4. Repeat
   */
+  //  for(int i = 0; i < NCITIES; ++i){
+  //    for(int j = 0; j < NCITIES; ++j){
+  //      printf("%d, %d: %d", i, j, get_dist(i, j));
+  //    }
+  //  }
+  // Their code just sequentially goes to every city in order
+  // int cityID = 0;
+  // for(cityID=0; cityID < NCITIES; cityID++) {
+  //   bestPath->path[cityID] = cityID;
+  //   if(cityID>0){ 
+  //     bestPath->cost += get_dist(bestPath->path[cityID-1],bestPath->path[cityID]);
+  //   }
+  // }
+
+  // DFS
   int cityID = 0;
-  for(cityID=0; cityID < NCITIES; cityID++) {
-    bestPath->path[cityID] = cityID;
-    if(cityID>0) bestPath->cost += get_dist(bestPath->path[cityID-1],bestPath->path[cityID]);
+  vector<city_t> currPath;
+
+  for(cityID = 0; cityID < NCITIES; cityID++){
+    // Run DFS from every city
+    // keep track of path you're running so far in case it's the best path
+    vector<bool> visited;
+    dfs(cityID, visited, currPath);
   }
 
   return;
